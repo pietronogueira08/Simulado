@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quiz de Histologia – Lâminas da Prática</title>
+  <meta name="description" content="Quiz interativo de histologia com lâminas da prática. Identifique os tecidos e estruturas histológicas."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0a0e1a;
+      --surface: #111827;
+      --surface2: #1a2235;
+      --border: rgba(99,179,237,0.15);
+      --accent: #63b3ed;
+      --accent2: #9f7aea;
+      --success: #48bb78;
+      --error: #fc8181;
+      --warning: #f6ad55;
+      --text: #e2e8f0;
+      --text-muted: #718096;
+      --glass: rgba(255,255,255,0.04);
+      --glow: 0 0 30px rgba(99,179,237,0.25);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      overflow-x: hidden;
+    }
+
+    /* Animated background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 50%, rgba(99,179,237,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 20%, rgba(159,122,234,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse at 50% 80%, rgba(72,187,120,0.05) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 900px;
+      padding: 20px 16px 60px;
+    }
+
+    /* ---- HEADER ---- */
+    header {
+      text-align: center;
+      padding: 40px 0 30px;
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      padding: 8px 20px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 20px;
+      backdrop-filter: blur(10px);
+    }
+
+    .logo-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    h1 {
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 800;
+      line-height: 1.2;
+      background: linear-gradient(135deg, #e2e8f0 0%, var(--accent) 50%, var(--accent2) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 400;
+    }
+
+    /* ---- START SCREEN ---- */
+    #start-screen {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 40px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+      box-shadow: var(--glow);
+      animation: fadeIn 0.5s ease;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin: 30px 0;
+    }
+
+    .stat-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 12px;
+    }
+
+    .stat-number {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--accent);
+      display: block;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .info-list {
+      background: var(--surface2);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: left;
+      margin: 20px 0;
+      list-style: none;
+    }
+
+    .info-list li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 0;
+      font-size: 14px;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .info-list li:last-child { border-bottom: none; }
+
+    .info-list .icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    /* ---- BUTTONS ---- */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: none;
+      border-radius: 14px;
+      padding: 14px 32px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      letter-spacing: 0.02em;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: white;
+      box-shadow: 0 4px 20px rgba(99,179,237,0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(99,179,237,0.45);
+    }
+
+    .btn-primary:active { transform: translateY(0); }
+
+    .btn-secondary {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--glass);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn-lg {
+      padding: 18px 48px;
+      font-size: 16px;
+      border-radius: 16px;
+    }
+
+    /* ---- QUIZ SCREEN ---- */
+    #quiz-screen { display: none; animation: fadeIn 0.4s ease; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Progress bar */
+    .progress-bar-wrap {
+      background: var(--surface2);
+      border-radius: 50px;
+      height: 6px;
+      overflow: hidden;
+      margin-bottom: 24px;
+      border: 1px solid var(--border);
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 50px;
+      transition: width 0.4s ease;
+    }
+
+    .quiz-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .quiz-counter {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .quiz-score {
+      display: flex;
+      gap: 12px;
+    }
+
+    .score-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .score-chip.correct { color: var(--success); border-color: rgba(72,187,120,0.3); }
+    .score-chip.wrong   { color: var(--error);   border-color: rgba(252,129,129,0.3); }
+
+    /* Image card */
+    .image-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+      margin-bottom: 24px;
+      position: relative;
+    }
+
+    .image-wrapper {
+      position: relative;
+      width: 100%;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 340px;
+    }
+
+    #quiz-image {
+      max-width: 100%;
+      max-height: 500px;
+      object-fit: contain;
+      display: block;
+      transition: opacity 0.3s ease;
+    }
+
+    /* Timer ring */
+    .timer-overlay {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .timer-svg {
+      transform: rotate(-90deg);
+    }
+
+    .timer-track {
+      fill: none;
+      stroke: rgba(255,255,255,0.1);
+      stroke-width: 4;
+    }
+
+    .timer-fill {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 4;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
+    }
+
+    .timer-text {
+      position: absolute;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* Phase label */
+    .phase-badge {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      padding: 5px 14px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    /* Image number hint */
+    .img-hint {
+      position: absolute;
+      bottom: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      padding: 4px 14px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Answer card */
+    .answer-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+
+    .answer-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    #answer-input {
+      flex: 1;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 18px;
+      font-family: inherit;
+      font-size: 15px;
+      color: var(--text);
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    #answer-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(99,179,237,0.12);
+    }
+
+    #answer-input:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    #answer-input.correct {
+      border-color: var(--success);
+      background: rgba(72,187,120,0.07);
+      color: var(--success);
+    }
+
+    #answer-input.wrong {
+      border-color: var(--error);
+      background: rgba(252,129,129,0.07);
+      color: var(--error);
+    }
+
+    /* Feedback overlay on image */
+    .feedback-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .feedback-overlay.show { opacity: 1; }
+
+    .feedback-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      backdrop-filter: blur(8px);
+    }
+
+    .feedback-icon.correct-icon {
+      background: rgba(72,187,120,0.25);
+      border: 2px solid var(--success);
+      box-shadow: 0 0 30px rgba(72,187,120,0.4);
+    }
+
+    .feedback-icon.wrong-icon {
+      background: rgba(252,129,129,0.25);
+      border: 2px solid var(--error);
+      box-shadow: 0 0 30px rgba(252,129,129,0.4);
+    }
+
+    .feedback-answer-name {
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 24px;
+      font-size: 15px;
+      font-weight: 600;
+      text-align: center;
+      color: var(--text);
+      max-width: 90%;
+    }
+
+    /* Answer reveal card */
+    #answer-reveal {
+      background: var(--surface);
+      border: 1px solid rgba(99,179,237,0.25);
+      border-radius: 20px;
+      padding: 28px;
+      margin-bottom: 20px;
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    #answer-reveal.show { display: block; }
+
+    .reveal-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+
+    .reveal-name {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 14px;
+      line-height: 1.3;
+    }
+
+    .reveal-chars {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      background: var(--surface2);
+      border-radius: 12px;
+      padding: 14px 16px;
+      border-left: 3px solid var(--accent);
+    }
+
+    .reveal-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: 14px;
+      padding: 6px 14px;
+      border-radius: 50px;
+    }
+
+    .reveal-status.correct { background: rgba(72,187,120,0.12); color: var(--success); }
+    .reveal-status.wrong   { background: rgba(252,129,129,0.12); color: var(--error); }
+
+    /* Result screen */
+    #result-screen {
+      display: none;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .result-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 48px 40px;
+      text-align: center;
+      box-shadow: var(--glow);
+    }
+
+    .result-emoji {
+      font-size: 64px;
+      margin-bottom: 20px;
+      display: block;
+    }
+
+    .result-grade {
+      font-size: 72px;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .result-label {
+      font-size: 16px;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .result-stat {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 12px;
+    }
+
+    .result-stat .num {
+      font-size: 2rem;
+      font-weight: 800;
+      display: block;
+    }
+
+    .result-stat .lbl {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .result-stat.c .num { color: var(--success); }
+    .result-stat.w .num { color: var(--error); }
+    .result-stat.t .num { color: var(--accent); }
+
+    /* Confetti canvas */
+    #confetti-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    /* Skip button */
+    .skip-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      border-radius: 10px;
+      padding: 8px 16px;
+      font-size: 12px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-top: 10px;
+    }
+
+    .skip-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Scroll to answer */
+    .scroll-hint {
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 600px) {
+      .stat-grid, .result-grid { grid-template-columns: repeat(2, 1fr); }
+      .input-row { flex-direction: column; }
+      .btn-lg { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+<div class="wrapper">
+  <header>
+    <div class="logo"><span class="logo-dot"></span> Histologia Prática – PA2</div>
+    <h1>Quiz de Lâminas</h1>
+    <p class="subtitle">Identifique os tecidos histológicos a partir das imagens microscópicas</p>
+  </header>
+
+  <!-- START SCREEN -->
+  <div id="start-screen">
+    <div class="stat-grid">
+      <div class="stat-card">
+        <span class="stat-number" id="total-slides-stat">27</span>
+        <div class="stat-label">Lâminas</div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-number">60s</span>
+        <div class="stat-label">Por imagem</div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-number">15s</span>
+        <div class="stat-label">Na resposta</div>
+      </div>
+    </div>
+
+    <ul class="info-list">
+      <li><span class="icon">🔀</span> Imagens em ordem aleatória a cada rodada</li>
+      <li><span class="icon">⌨️</span> Digite o nome do tecido – pequenos erros são tolerados</li>
+      <li><span class="icon">⏱️</span> 60s para identificar, depois a resposta aparece por 15s</li>
+      <li><span class="icon">📊</span> Pontuação exibida ao final do quiz</li>
+    </ul>
+
+    <button class="btn btn-primary btn-lg" id="start-btn">
+      ▶ Iniciar Quiz
+    </button>
+  </div>
+
+  <!-- QUIZ SCREEN -->
+  <div id="quiz-screen">
+    <div class="quiz-meta">
+      <span class="quiz-counter" id="quiz-counter">Lâmina 1 de 27</span>
+      <div class="quiz-score">
+        <span class="score-chip correct">✓ <span id="correct-count">0</span></span>
+        <span class="score-chip wrong">✗ <span id="wrong-count">0</span></span>
+      </div>
+    </div>
+
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
+    </div>
+
+    <div class="image-card">
+      <div class="image-wrapper">
+        <img id="quiz-image" src="" alt="Lâmina histológica"/>
+
+        <!-- Timer ring -->
+        <div class="timer-overlay">
+          <svg class="timer-svg" width="56" height="56" viewBox="0 0 56 56">
+            <circle class="timer-track" cx="28" cy="28" r="22"/>
+            <circle class="timer-fill" id="timer-circle" cx="28" cy="28" r="22"
+              stroke-dasharray="138.23"
+              stroke-dashoffset="0"/>
+          </svg>
+          <span class="timer-text" id="timer-text">60</span>
+        </div>
+
+        <!-- Phase badge -->
+        <div class="phase-badge" id="phase-badge">Identifique</div>
+
+        <!-- Feedback overlay -->
+        <div class="feedback-overlay" id="feedback-overlay">
+          <div class="feedback-icon" id="feedback-icon"></div>
+          <div class="feedback-answer-name" id="feedback-answer-text"></div>
+        </div>
+
+        <!-- Image hint -->
+        <div class="img-hint" id="img-hint"></div>
+      </div>
+    </div>
+
+    <!-- Answer input (shown during question phase) -->
+    <div class="answer-card" id="answer-card">
+      <div class="answer-label">
+        <span>🔬</span> Qual é o nome desta lâmina?
+      </div>
+      <div class="input-row">
+        <input type="text" id="answer-input" placeholder="Digite o nome do tecido..." autocomplete="off" autocorrect="off" spellcheck="false"/>
+        <button class="btn btn-primary" id="submit-btn">Confirmar</button>
+      </div>
+      <div class="scroll-hint">
+        <button class="skip-btn" id="skip-btn">⏭ Pular (revelar resposta)</button>
+      </div>
+    </div>
+
+    <!-- Answer reveal (shown during answer phase) -->
+    <div id="answer-reveal">
+      <div class="reveal-title">✦ Resposta Correta</div>
+      <div class="reveal-name" id="reveal-name"></div>
+      <div class="reveal-chars" id="reveal-chars"></div>
+      <div class="reveal-status" id="reveal-status"></div>
+    </div>
+  </div>
+
+  <!-- RESULT SCREEN -->
+  <div id="result-screen">
+    <div class="result-card">
+      <span class="result-emoji" id="result-emoji">🎓</span>
+      <div class="result-grade" id="result-grade">0%</div>
+      <div class="result-label" id="result-label">Resultado final</div>
+
+      <div class="result-grid">
+        <div class="result-stat c">
+          <span class="num" id="res-correct">0</span>
+          <div class="lbl">Corretas</div>
+        </div>
+        <div class="result-stat w">
+          <span class="num" id="res-wrong">0</span>
+          <div class="lbl">Erradas</div>
+        </div>
+        <div class="result-stat t">
+          <span class="num" id="res-total">0</span>
+          <div class="lbl">Total</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn btn-primary btn-lg" id="restart-btn">🔄 Jogar Novamente</button>
+        <button class="btn btn-secondary" id="review-btn">📋 Revisar Lâminas</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+//  SLIDE DATABASE
+// ============================================================
+const SLIDES = [
+  {
+    id: 1,
+    name: "Epitélio Cilíndrico Simples Com Células Caliciformes",
+    aliases: ["epitelio cilindrico simples com celulas caliciformes","epitelio cilindrico simples","cilindrico simples caliciforme","cilindrico caliciforme"],
+    characteristics: "Núcleos com alturas uniformes entre si; Células mais altas que largas; Presença de células caliciformes.",
+    images: ["quiz_images/p1_i0_680x510.jpeg","quiz_images/p1_i1_689x529.jpeg"]
+  },
+  {
+    id: 2,
+    name: "Epitélio Cúbico Simples",
+    aliases: ["epitelio cubico simples","cubico simples","epitélio cúbico simples"],
+    characteristics: "Células justapostas; Núcleo central; Células tão altas quanto largas.",
+    images: ["quiz_images/p1_i2_680x529.jpeg","quiz_images/p1_i3_401x591.jpeg"]
+  },
+  {
+    id: 3,
+    name: "Epitélio Pseudoestratificado Ciliado Com Células Caliciformes",
+    aliases: ["epitelio pseudoestratificado ciliado com celulas caliciformes","pseudoestratificado ciliado","pseudoestratificado ciliado caliciforme","epitelio pseudoestratificado ciliado"],
+    characteristics: "Pequenos cílios nos ápices; Células caliciformes; Células com núcleos de alturas diferentes, todas tocando a lâmina basal.",
+    images: ["quiz_images/p1_i4_560x270.jpeg","quiz_images/p1_i5_689x529.jpeg"]
+  },
+  {
+    id: 4,
+    name: "Epitélio Pseudoestratificado Estereociliado",
+    aliases: ["epitelio pseudoestratificado estereociliado","pseudoestratificado estereociliado","estereociliado"],
+    characteristics: "Células com núcleos de alturas diferentes, mas todas tocando a lâmina basal; Estereocílios voltados para a luz.",
+    images: ["quiz_images/p2_i0_685x529.jpeg","quiz_images/p2_i1_425x363.jpeg"]
+  },
+  {
+    id: 5,
+    name: "Epitélio Pavimentoso Estratificado Não Queratinizado",
+    aliases: ["epitelio pavimentoso estratificado nao queratinizado","pavimentoso estratificado nao queratinizado","epitelio pavimentoso nao queratinizado","nao queratinizado"],
+    characteristics: "Células planas na superfície com núcleo picnótico na camada superficial; Membrana basal sinuosa; Várias camadas celulares superpostas.",
+    images: ["quiz_images/p2_i2_352x240.jpeg","quiz_images/p2_i3_691x529.jpeg"]
+  },
+  {
+    id: 6,
+    name: "Epitélio Pavimentoso Estratificado Queratinizado",
+    aliases: ["epitelio pavimentoso estratificado queratinizado","pavimentoso estratificado queratinizado","queratinizado","epitelio pavimentoso queratinizado"],
+    characteristics: "Queratina; Célula achatada com núcleo picnótico; Membrana basal sinuosa.",
+    images: ["quiz_images/p2_i4_685x529.jpeg"]
+  },
+  {
+    id: 7,
+    name: "Epitélio De Transição Ou Urotélio",
+    aliases: ["epitelio de transicao ou urotelico","epitelio de transicao","urotelico","urotelion","urotélio","epitelio transicao","epitelio de transição"],
+    characteristics: "Células superficiais globosas e com núcleos grandes; Células profundas mais unidas.",
+    images: ["quiz_images/p3_i0_425x297.jpeg","quiz_images/p3_i1_687x529.jpeg"]
+  },
+  {
+    id: 8,
+    name: "Tecido Adiposo",
+    aliases: ["tecido adiposo","adiposo"],
+    characteristics: "Células grandes; Núcleo periférico e achatado.",
+    images: ["quiz_images/p3_i2_680x529.jpeg","quiz_images/p3_i3_684x502.jpeg"]
+  },
+  {
+    id: 9,
+    name: "Fibras Reticulares",
+    aliases: ["fibras reticulares","fibra reticular","reticular"],
+    characteristics: "São ramificadas e se entrelaçam.",
+    images: ["quiz_images/p3_i4_702x529.jpeg","quiz_images/p3_i5_352x240.jpeg"]
+  },
+  {
+    id: 10,
+    name: "Fibras Elásticas",
+    aliases: ["fibras elasticas","fibra elastica","elasticas","elastina"],
+    characteristics: "Longas e Delgadas.",
+    images: ["quiz_images/p4_i0_670x529.jpeg","quiz_images/p4_i1_425x282.jpeg"]
+  },
+  {
+    id: 11,
+    name: "Fibras Colágenas",
+    aliases: ["fibras colagenas","fibra colagena","colagenas","colageno"],
+    characteristics: "Fibras curtas e espessas, dispostas em várias direções.",
+    images: ["quiz_images/p4_i2_425x429.jpeg","quiz_images/p4_i3_312x232.jpeg"]
+  },
+  {
+    id: 12,
+    name: "Tecido Cartilaginoso",
+    aliases: ["tecido cartilaginoso","cartilagem","cartilaginoso"],
+    characteristics: "Abundância de substância extracelular; Presença de núcleos de condrócitos dentro das lacunas; Presença de Pericôndrio; Condroblastos na periferia.",
+    images: ["quiz_images/p4_i4_561x604.jpeg","quiz_images/p4_i5_352x240.jpeg","quiz_images/p4_i6_584x451.jpeg"]
+  },
+  {
+    id: 13,
+    name: "Ossificação Intramembranosa",
+    aliases: ["ossificacao intramembranosa","intramembranosa","ossificação intramembranosa"],
+    characteristics: "Presença de trabéculas ósseas; Tecido Mesenquimal entre as trabéculas; Presença de osteoblastos.",
+    images: ["quiz_images/p5_i0_674x529.jpeg","quiz_images/p5_i1_576x572.jpeg"]
+  },
+  {
+    id: 14,
+    name: "Ossificação Endocondral",
+    aliases: ["ossificacao endocondral","endocondral","ossificação endocondral"],
+    characteristics: "Molde de cartilagem; Condrócitos seriados; Condrócitos hipertrofiados; Presença de Trabéculas Ósseas.",
+    images: ["quiz_images/p5_i2_312x232.jpeg","quiz_images/p5_i3_680x633.jpeg"]
+  },
+  {
+    id: 15,
+    name: "Tecido Ósseo Esponjoso",
+    aliases: ["tecido osseo esponjoso","osseo esponjoso","osso esponjoso","esponjoso"],
+    characteristics: "Trabéculas Ósseas; Presença de Cartilagem articular; Fina camada de tecido ósseo compacto.",
+    images: ["quiz_images/p5_i4_521x491.jpeg","quiz_images/p5_i5_352x240.jpeg"]
+  },
+  {
+    id: 16,
+    name: "Tecido Ósseo Compacto",
+    aliases: ["tecido osseo compacto","osseo compacto","osso compacto","compacto","tecido osseo","sistema de havers","canal de havers"],
+    characteristics: "Canal de Havers; Sistema de Havers (Lacunas dispostas ao redor de um canal central); Osteócitos dispostos concentricamente.",
+    images: ["quiz_images/p6_i0_405x272.jpeg","quiz_images/p6_i1_352x240.jpeg"]
+  },
+  {
+    id: 17,
+    name: "Músculo Estriado Cardíaco",
+    aliases: ["musculo estriado cardiaco","estriado cardiaco","musculo cardiaco","cardiaco","musculo estriado cardíaco"],
+    characteristics: "Células com 1 a 2 núcleos; Núcleos centrais; Presença de discos intercalares; Estriações transversais.",
+    images: ["quiz_images/p6_i2_724x603.jpeg","quiz_images/p6_i3_520x601.jpeg"]
+  },
+  {
+    id: 18,
+    name: "Músculo Estriado Esquelético",
+    aliases: ["musculo estriado esqueletico","estriado esqueletico","musculo esqueletico","esqueletico"],
+    characteristics: "Núcleos periféricos; Estriações transversais; Mais de um núcleo por célula; Fibras longas.",
+    images: ["quiz_images/p6_i4_352x240.jpeg","quiz_images/p6_i5_820x539.jpeg"]
+  },
+  {
+    id: 19,
+    name: "Músculo Liso",
+    aliases: ["musculo liso","liso","muscular liso"],
+    characteristics: "Fibra muscular fusiforme; Núcleo único e central.",
+    images: ["quiz_images/p7_i0_561x603.jpeg","quiz_images/p7_i1_352x240.jpeg"]
+  },
+  {
+    id: 20,
+    name: "Tecido Nervoso – Cérebro",
+    aliases: ["tecido nervoso cerebro","cerebro","tecido nervoso – cerebro","tecido nervoso - cerebro","nervoso cerebro","tecido nervoso cerebral"],
+    characteristics: "Presença de células da Glia; Neurônios.",
+    images: ["quiz_images/p7_i2_463x464.jpeg","quiz_images/p7_i3_680x720.jpeg"]
+  },
+  {
+    id: 21,
+    name: "Tecido Nervoso – Cerebelo",
+    aliases: ["tecido nervoso cerebelo","cerebelo","nervoso cerebelo","tecido nervoso – cerebelo","tecido nervoso - cerebelo"],
+    characteristics: "O córtex é dividido em: Camada molecular; Camada das células de Purkinje; Camada granulosa; Camada medular (substância branca).",
+    images: ["quiz_images/p7_i4_680x529.jpeg","quiz_images/p7_i5_680x528.jpeg"]
+  },
+  {
+    id: 22,
+    name: "Medula Espinhal",
+    aliases: ["medula espinhal","medula espinal"],
+    characteristics: "Canal central; H medular (substância cinzenta); Substância branca ao redor da substância cinzenta.",
+    images: ["quiz_images/p8_i0_352x240.jpeg","quiz_images/p8_i1_680x510.jpeg"]
+  },
+  {
+    id: 23,
+    name: "Tecido Sanguíneo – Sangue",
+    aliases: ["tecido sanguineo","sangue","tecido sanguíneo","tecido sanguineo sangue","hemacias"],
+    characteristics: "Hemácias, Plaquetas e Linfócitos; Hemácias e Basófilo; Hemácias, Eosínófilo e Neutrófilo; Hemácia e Monócito.",
+    images: ["quiz_images/p8_i2_809x606.jpeg","quiz_images/p8_i3_680x510.jpeg","quiz_images/p8_i4_620x507.jpeg","quiz_images/p8_i5_680x703.jpeg"]
+  },
+  {
+    id: 24,
+    name: "Tecido Linfoide – Tonsilas Ou Amígdala",
+    aliases: ["tecido linfoide tonsilas ou amigdala","tonsilas","amigdala","amígdala","tonsilas ou amigdala","linfoide tonsilas","linfoide amigdala","tonsila"],
+    characteristics: "Presença De Criptas; Cápsula Epitelial; Nódulos.",
+    images: ["quiz_images/p9_i0_680x510.jpeg","quiz_images/p9_i1_680x510.jpeg"]
+  },
+  {
+    id: 25,
+    name: "Tecido Linfoide – Linfonodo",
+    aliases: ["tecido linfoide linfonodo","linfonodo","linfonodo","gânglio linfático"],
+    characteristics: "Córtex Nodular, Medula Cordonal, Septos Conjuntos, Cápsula Conjuntiva.",
+    images: ["quiz_images/p9_i2_484x403.jpeg","quiz_images/p9_i3_680x510.jpeg"]
+  },
+  {
+    id: 26,
+    name: "Tecido Linfoide – Baço",
+    aliases: ["tecido linfoide baco","baco","baço","linfoide baco"],
+    characteristics: "Polpa Branca, Polpa Vermelha, Cápsula Conjuntiva.",
+    images: ["quiz_images/p9_i4_444x472.jpeg","quiz_images/p9_i5_680x510.jpeg"]
+  },
+  {
+    id: 27,
+    name: "Tecido Linfoide – Timo",
+    aliases: ["tecido linfoide timo","timo","linfoide timo"],
+    characteristics: "Cápsula Conjuntiva; Dividido em Lóbulos; Septos Conjuntivos.",
+    images: ["quiz_images/p10_i0_546x501.jpeg","quiz_images/p10_i1_680x510.jpeg"]
+  }
+];
+
+// ============================================================
+//  STATE
+// ============================================================
+let quizOrder = [];
+let currentIndex = 0;
+let currentSlide = null;
+let currentImageIndex = 0;
+let timerInterval = null;
+let timerSeconds = 0;
+let phase = 'question'; // 'question' | 'answer'
+let correct = 0;
+let wrong = 0;
+let answered = false;
+
+// ============================================================
+//  ELEMENTS
+// ============================================================
+const startScreen   = document.getElementById('start-screen');
+const quizScreen    = document.getElementById('quiz-screen');
+const resultScreen  = document.getElementById('result-screen');
+const startBtn      = document.getElementById('start-btn');
+const restartBtn    = document.getElementById('restart-btn');
+const reviewBtn     = document.getElementById('review-btn');
+const submitBtn     = document.getElementById('submit-btn');
+const skipBtn       = document.getElementById('skip-btn');
+const answerInput   = document.getElementById('answer-input');
+const quizImage     = document.getElementById('quiz-image');
+const timerText     = document.getElementById('timer-text');
+const timerCircle   = document.getElementById('timer-circle');
+const phaseBadge    = document.getElementById('phase-badge');
+const imgHint       = document.getElementById('img-hint');
+const progressBar   = document.getElementById('progress-bar');
+const quizCounter   = document.getElementById('quiz-counter');
+const correctCount  = document.getElementById('correct-count');
+const wrongCount    = document.getElementById('wrong-count');
+const answerCard    = document.getElementById('answer-card');
+const answerReveal  = document.getElementById('answer-reveal');
+const feedbackOverlay = document.getElementById('feedback-overlay');
+const feedbackIcon  = document.getElementById('feedback-icon');
+const feedbackAnswerText = document.getElementById('feedback-answer-text');
+const revealName    = document.getElementById('reveal-name');
+const revealChars   = document.getElementById('reveal-chars');
+const revealStatus  = document.getElementById('reveal-status');
+
+// Timer circle circumference: 2*pi*22 = 138.23
+const CIRCUMFERENCE = 2 * Math.PI * 22;
+
+// ============================================================
+//  UTILS
+// ============================================================
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function normalize(str) {
+  return str
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function levenshtein(a, b) {
+  const m = a.length, n = b.length;
+  const dp = Array.from({length: m+1}, (_, i) => Array.from({length: n+1}, (_, j) => i ? (j ? 0 : i) : j));
+  for (let i = 1; i <= m; i++)
+    for (let j = 1; j <= n; j++)
+      dp[i][j] = a[i-1] === b[j-1]
+        ? dp[i-1][j-1]
+        : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+  return dp[m][n];
+}
+
+function isCorrectAnswer(userAnswer, slide) {
+  const u = normalize(userAnswer);
+  if (!u) return false;
+
+  // Check exact match or alias
+  const names = [normalize(slide.name), ...slide.aliases.map(normalize)];
+  for (const name of names) {
+    if (u === name) return true;
+    // Substring containment check (user typed main keyword)
+    if (name.includes(u) && u.length >= 5) return true;
+    if (u.includes(name) && name.length >= 5) return true;
+    // Levenshtein for similar length strings
+    const threshold = Math.max(2, Math.floor(name.length * 0.18));
+    if (levenshtein(u, name) <= threshold) return true;
+    // Word-based: if user got main words right
+    const nameWords = name.split(' ').filter(w => w.length > 3);
+    const userWords = u.split(' ').filter(w => w.length > 3);
+    const matches = userWords.filter(uw => nameWords.some(nw => levenshtein(uw, nw) <= 1));
+    if (matches.length >= Math.min(2, Math.ceil(nameWords.length * 0.6))) return true;
+  }
+  return false;
+}
+
+// ============================================================
+//  QUIZ LOGIC
+// ============================================================
+function startQuiz() {
+  quizOrder = shuffle(SLIDES.map((_, i) => i));
+  currentIndex = 0;
+  correct = 0;
+  wrong = 0;
+  correctCount.textContent = '0';
+  wrongCount.textContent = '0';
+
+  startScreen.style.display = 'none';
+  resultScreen.style.display = 'none';
+  quizScreen.style.display = 'block';
+
+  loadQuestion();
+}
+
+function loadQuestion() {
+  if (currentIndex >= quizOrder.length) {
+    showResult();
+    return;
+  }
+
+  answered = false;
+  currentSlide = SLIDES[quizOrder[currentIndex]];
+  currentImageIndex = Math.floor(Math.random() * currentSlide.images.length);
+
+  // Update meta
+  quizCounter.textContent = `Lâmina ${currentIndex + 1} de ${quizOrder.length}`;
+  progressBar.style.width = `${(currentIndex / quizOrder.length) * 100}%`;
+  imgHint.textContent = `Imagem ${currentImageIndex + 1} de ${currentSlide.images.length}`;
+
+  // Reset UI
+  answerInput.value = '';
+  answerInput.disabled = false;
+  answerInput.className = '';
+  answerInput.placeholder = 'Digite o nome do tecido...';
+  feedbackOverlay.classList.remove('show');
+  answerReveal.classList.remove('show');
+  answerCard.style.display = '';
+  phaseBadge.textContent = 'Identifique';
+  phaseBadge.style.color = 'var(--accent)';
+
+  // Load image
+  quizImage.style.opacity = '0.3';
+  quizImage.src = currentSlide.images[currentImageIndex];
+  quizImage.onload = () => { quizImage.style.opacity = '1'; };
+
+  // Focus input
+  setTimeout(() => answerInput.focus(), 100);
+
+  // Start question timer (60s)
+  phase = 'question';
+  startTimer(60, onQuestionTimerEnd);
+}
+
+function onQuestionTimerEnd() {
+  if (answered) return;
+  // Time's up — mark wrong, show answer
+  wrong++;
+  wrongCount.textContent = wrong;
+  showAnswerPhase(false, '');
+}
+
+function showAnswerPhase(wasCorrect, userTyped) {
+  answered = true;
+  clearTimer();
+
+  // Disable input
+  answerInput.disabled = true;
+
+  // Show feedback overlay
+  feedbackIcon.className = 'feedback-icon ' + (wasCorrect ? 'correct-icon' : 'wrong-icon');
+  feedbackIcon.textContent = wasCorrect ? '✓' : '✗';
+  feedbackAnswerText.textContent = currentSlide.name;
+  feedbackOverlay.classList.add('show');
+
+  // Show answer reveal card
+  revealName.textContent = currentSlide.name;
+  revealChars.textContent = currentSlide.characteristics;
+  if (wasCorrect) {
+    revealStatus.className = 'reveal-status correct';
+    revealStatus.textContent = '✓ Resposta correta!';
+    if (userTyped) answerInput.classList.add('correct');
+  } else {
+    revealStatus.className = 'reveal-status wrong';
+    revealStatus.textContent = userTyped ? `✗ Resposta errada — "${userTyped}"` : '✗ Tempo esgotado';
+    if (userTyped) answerInput.classList.add('wrong');
+  }
+  answerReveal.classList.add('show');
+
+  // Phase badge
+  phaseBadge.textContent = 'Resposta';
+  phaseBadge.style.color = wasCorrect ? 'var(--success)' : 'var(--error)';
+
+  // Start answer timer (15s)
+  phase = 'answer';
+  startTimer(15, onAnswerTimerEnd);
+}
+
+function onAnswerTimerEnd() {
+  currentIndex++;
+  loadQuestion();
+}
+
+// ============================================================
+//  TIMER
+// ============================================================
+function startTimer(seconds, onEnd) {
+  clearTimer();
+  timerSeconds = seconds;
+  updateTimerUI(seconds, seconds);
+  timerInterval = setInterval(() => {
+    timerSeconds--;
+    updateTimerUI(timerSeconds, seconds);
+    if (timerSeconds <= 0) {
+      clearTimer();
+      onEnd();
+    }
+  }, 1000);
+}
+
+function clearTimer() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+}
+
+function updateTimerUI(remaining, total) {
+  timerText.textContent = remaining;
+  const fraction = remaining / total;
+  const offset = CIRCUMFERENCE * (1 - fraction);
+  timerCircle.style.strokeDashoffset = offset;
+
+  // Color change
+  if (fraction > 0.5) {
+    timerCircle.style.stroke = 'var(--accent)';
+  } else if (fraction > 0.25) {
+    timerCircle.style.stroke = 'var(--warning)';
+  } else {
+    timerCircle.style.stroke = 'var(--error)';
+  }
+}
+
+// ============================================================
+//  SUBMIT ANSWER
+// ============================================================
+function submitAnswer() {
+  if (answered || phase !== 'question') return;
+  const userAnswer = answerInput.value.trim();
+  if (!userAnswer) { answerInput.focus(); return; }
+
+  const isOk = isCorrectAnswer(userAnswer, currentSlide);
+  if (isOk) { correct++; correctCount.textContent = correct; }
+  else       { wrong++;   wrongCount.textContent   = wrong; }
+
+  showAnswerPhase(isOk, userAnswer);
+}
+
+function skipQuestion() {
+  if (answered) return;
+  wrong++;
+  wrongCount.textContent = wrong;
+  showAnswerPhase(false, '');
+}
+
+// ============================================================
+//  RESULTS
+// ============================================================
+function showResult() {
+  clearTimer();
+  quizScreen.style.display = 'none';
+  resultScreen.style.display = 'block';
+
+  const total = quizOrder.length;
+  const pct = Math.round((correct / total) * 100);
+
+  document.getElementById('result-grade').textContent = pct + '%';
+  document.getElementById('res-correct').textContent = correct;
+  document.getElementById('res-wrong').textContent = wrong;
+  document.getElementById('res-total').textContent = total;
+
+  let emoji = '😢', label = 'Continue praticando!';
+  if (pct >= 90) { emoji = '🏆'; label = 'Excelente! Domínio completo!'; }
+  else if (pct >= 75) { emoji = '🎓'; label = 'Muito bem! Quase lá!'; }
+  else if (pct >= 60) { emoji = '📚'; label = 'Bom desempenho! Revise os erros.'; }
+  else if (pct >= 40) { emoji = '🔬'; label = 'Precisa estudar mais!'; }
+
+  document.getElementById('result-emoji').textContent = emoji;
+  document.getElementById('result-label').textContent = label;
+
+  if (pct >= 75) launchConfetti();
+}
+
+// ============================================================
+//  CONFETTI
+// ============================================================
+function launchConfetti() {
+  const canvas = document.getElementById('confetti-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const colors = ['#63b3ed','#9f7aea','#48bb78','#f6ad55','#fc8181','#e2e8f0'];
+  const pieces = Array.from({length: 120}, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * -canvas.height,
+    w: Math.random() * 10 + 5,
+    h: Math.random() * 6 + 4,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    rot: Math.random() * 360,
+    speed: Math.random() * 3 + 2,
+    swing: Math.random() * 2 - 1,
+  }));
+
+  let frame;
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    pieces.forEach(p => {
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot * Math.PI / 180);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+      ctx.restore();
+      p.y += p.speed;
+      p.x += p.swing * 0.5;
+      p.rot += 2;
+      if (p.y > canvas.height) { p.y = -20; p.x = Math.random() * canvas.width; }
+    });
+    frame = requestAnimationFrame(draw);
+    setTimeout(() => cancelAnimationFrame(frame), 4000);
+  }
+  draw();
+}
+
+// ============================================================
+//  EVENT LISTENERS
+// ============================================================
+startBtn.addEventListener('click', startQuiz);
+restartBtn.addEventListener('click', () => {
+  resultScreen.style.display = 'none';
+  startScreen.style.display = '';
+});
+
+reviewBtn.addEventListener('click', () => {
+  // Show all slides in start screen or just restart
+  resultScreen.style.display = 'none';
+  startQuiz();
+});
+
+submitBtn.addEventListener('click', submitAnswer);
+
+skipBtn.addEventListener('click', skipQuestion);
+
+answerInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') submitAnswer();
+});
+
+// Update total slides stat
+document.getElementById('total-slides-stat').textContent = SLIDES.length;
+</script>
+</body>
+</html>
